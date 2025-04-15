@@ -566,13 +566,25 @@ function processWithImageData(feishuLink, title, description, imageData) {
     // const shareBaseUrl = "https://你的域名/share.html";
     
     // 构建分享链接
-    let shareUrl = githubPagesUrl + "?url=" + encodeURIComponent(feishuLink) + 
-                  "&title=" + encodeURIComponent(title) + 
-                  "&desc=" + encodeURIComponent(description);
-    
-    // 如果是直接URL而非Data URL，则添加图片
-    if (typeof imageData === 'string' && !imageData.startsWith('data:')) {
-        shareUrl += "&img=" + encodeURIComponent(imageData);
+    / 构建分享链接
+let shareUrl = githubPagesUrl + "?url=" + encodeURIComponent(feishuLink) + 
+              "&title=" + encodeURIComponent(title) + 
+              "&desc=" + encodeURIComponent(description);
+
+    // 处理图片URL
+    let imageUrl = imageData;
+    if (typeof imageData !== 'string' || imageData.startsWith('data:')) {
+    // 使用一个默认图片URL(确保这是可公开访问的)
+    imageUrl = "https://sf1-cdn-tos.toutiaostatic.com/obj/arco-mobile/b4d5be1a648aa1d0cc5.png";
+    } else {
+    imageUrl = imageData;
+    }
+
+    // 添加图片参数
+    shareUrl += "&img=" + encodeURIComponent(imageUrl);
+
+    // 添加随机参数避开微信缓存
+    shareUrl += "&_t=" + Date.now();
     }
     
     // 显示生成的链接，保留原始格式
