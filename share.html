@@ -149,6 +149,10 @@
         
         // 更新页面内容
         function updatePageContent(params) {
+            // 更新微信特定标签
+            document.querySelector('meta[property="wx:title"]').setAttribute('content', params.title);
+            document.querySelector('meta[property="wx:description"]').setAttribute('content', params.desc);
+            document.querySelector('meta[property="wx:image"]').setAttribute('content', params.img);
             // 更新meta标签
             document.title = params.title;
             document.querySelector('meta[property="og:title"]').setAttribute('content', params.title);
