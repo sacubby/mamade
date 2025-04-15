@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>飞书文档微信卡片生成器</title>
+    <style>
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            color: #3370ff;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        input[type="text"], 
+        input[type="url"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus,
+        input[type="url"]:focus,
+        textarea:focus {
+            border-color: #3370ff;
+            outline: none;
+        }
+        
+        .form-hint {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 6px;
+        }
+        
+        .preview-container {
+            margin: 30px 0;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .preview-header {
+            background-color: #f7f7f7;
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+        }
+        
+        .preview-content {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .preview-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            background-color: #f0f0f0;
+            margin-right: 15px;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .preview-text {
+            flex: 1;
+        }
+        
+        .preview-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .preview-description {
+            font-size: 0.9rem;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .preview-source {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 5px;
+        }
+        
+        .submit-button {
+            background-color: #3370ff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        .submit-button:hover {
+            background-color: #2860e1;
+        }
+        
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f7f7f7;
+            display: none;
+        }
+        
+        .result-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .result-link {
+            word-break: break-all;
+            padding: 12px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: monospace;
+            margin-bottom: 15px;
+        }
+        
+        .copy-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .copy-button:hover {
+            background-color: #3e8e41;
+        }
+        
+        .img-upload-container {
+            margin-top: 10px;
+        }
+
+        .img-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            border: 2px dashed #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .img-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            display: none;
+        }
+
+        .file-upload-container {
+            margin-bottom: 15px;
+        }
+
+        .file-upload-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #f0f0f0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .or-divider {
+            text-align: center;
+            margin: 10px 0;
+            color: #888;
+            position: relative;
+        }
+
+        .or-divider:before,
+        .or-divider:after {
+            content: "";
+            display: inline-block;
+            width: 40%;
+            height: 1px;
+            background: #ddd;
+            vertical-align: middle;
+            margin: 0 10px;
+        }
+
+        .tips-container {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f5f7fa;
+            border-left: 4px solid #3370ff;
+            border-radius: 4px;
+        }
+
+        .tips-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #3370ff;
+        }
+
+        .tips-content {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        #card-iframe {
+            width: 100%;
+            height: 400px;
+            border: none;
+            border-radius: 8px;
+            display: none;
+            margin-top: 20px;
+        }
+
+        .download-button {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .download-button:hover {
+            background-color: #e68a00;
+        }
+        
+        .branding {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: #999;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3370ff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>飞书文档微信卡片生成器</h1>
+            <div class="subtitle">将飞书文档的分享链接转换为在微信中以卡片形式显示</div>
+        </header>
+        
+        <form id="linkForm">
+            <div class="form-group">
+                <label for="feishu-link">飞书文档链接</label>
+                <input type="url" id="feishu-link" placeholder="输入飞书文档的分享链接" required>
+                <div class="form-hint">例如: https://vvtld748t6.feishu.cn/docx/doxcn7UTG5nXonGV8RBXgmmWl4g?from=from_copylink</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="custom-title">自定义标题</label>
+                <input type="text" id="custom-title" placeholder="输入卡片显示的标题" required>
+                <div class="form-hint">建议不超过20个字</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="custom-description">自定义描述</label>
+                <textarea id="custom-description" rows="2" placeholder="输入卡片显示的描述内容" required></textarea>
+                <div class="form-hint">建议不超过40个字</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="custom-image">自定义封面图片</label>
+                <div class="img-upload-container">
+                    <div class="img-preview">
+                        <img id="image-preview" src="#" alt="预览">
+                    </div>
+                    
+                    <div class="file-upload-container">
+                        <label for="file-upload" class="file-upload-btn">上传本地图片</label>
+                        <input type="file" id="file-upload" accept="image/*" style="display: none;">
+                    </div>
+                    
+                    <div class="or-divider">或</div>
+                    
+                    <input type="url" id="image-url" placeholder="输入图片URL" oninput="previewImageFromUrl()">
+                </div>
+                <div class="form-hint">推荐使用正方形图片，至少400x400像素</div>
+            </div>
+            
+            <div class="preview-container">
+                <div class="preview-header">预览效果</div>
+                <div class="preview-content">
+                    <div class="preview-image" id="preview-image-display"></div>
+                    <div class="preview-text">
+                        <div class="preview-title" id="preview-title">自定义标题将显示在这里</div>
+                        <div class="preview-description" id="preview-description">自定义描述将显示在这里</div>
+                        <div class="preview-source">飞书文档</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="loading-spinner"></div>
+                <div>处理中，请稍候...</div>
+            </div>
+            
+            <button type="submit" class="submit-button">生成微信卡片链接</button>
+        </form>
+        
+        <div class="result-container" id="result-container">
+            <div class="result-title">生成成功! 复制以下链接分享到微信</div>
+            <div class="result-link" id="result-link"></div>
+            <button class="copy-button" onclick="copyLink()">复制链接到剪贴板</button>
+            <button class="download-button" onclick="downloadCardPage()">下载HTML文件</button>
+            
+            <iframe id="card-iframe" frameborder="0"></iframe>
+            
+            <div class="tips-container">
+                <div class="tips-title">使用提示</div>
+                <div class="tips-content">
+                    <p>1. 复制生成的链接到微信，将显示为精美卡片</p>
+                    <p>2. 如果卡片无法显示，可下载HTML文件并上传到自己的服务器</p>
+                    <p>3. 图片建议使用正方形，且不要太大以免加载缓慢</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="branding">
+            © 2024 飞书文档微信卡片生成器 - 让您的分享更加专业
+        </div>
+    </div>
+</body>
+
+<script type="text/javascript">
+// 确保DOM加载完成后执行
+document.addEventListener('DOMContentLoaded', function() {
+    // 图片上传和预览初始化
+    document.getElementById('file-upload').addEventListener('change', function(e) {
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            
+            // 检查文件类型
+            if (!file.type.match('image.*')) {
+                alert('请上传图片文件');
+                return;
+            }
+            
+            // 检查文件大小 (限制为2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                alert('图片大小不能超过2MB');
+                return;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const imageUrl = e.target.result;
+                const preview = document.getElementById('image-preview');
+                const previewDisplay = document.getElementById('preview-image-display');
+                
+                preview.src = imageUrl;
+                preview.style.display = 'block';
+                previewDisplay.style.backgroundImage = "url('" + imageUrl + "')";
+                
+                // 清空图片URL输入
+                document.getElementById('image-url').value = '';
+            };
+            
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // 初始化标题和描述的预览效果
+    const titleInput = document.getElementById('custom-title');
+    const descInput = document.getElementById('custom-description');
+    
+    // 添加事件监听器
+    titleInput.addEventListener('input', function() {
+        document.getElementById('preview-title').innerText = this.value || '自定义标题将显示在这里';
+    });
+    
+    descInput.addEventListener('input', function() {
+        document.getElementById('preview-description').innerText = this.value || '自定义描述将显示在这里';
+    });
+
+    // 表单提交处理
+    document.getElementById('linkForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const feishuLink = document.getElementById('feishu-link').value;
+        const customTitle = document.getElementById('custom-title').value;
+        const customDescription = document.getElementById('custom-description').value;
+        
+        // 验证飞书链接
+        if (!feishuLink.includes('feishu.cn')) {
+            alert('请输入有效的飞书文档链接');
+            return;
+        }
+        
+        // 清理链接，移除?from=from_copylink等参数
+        const cleanFeishuLink = feishuLink.split('?')[0];
+        
+        // 获取图片数据
+        let imageData = '';
+        const fileInput = document.getElementById('file-upload');
+        const imageUrl = document.getElementById('image-url').value;
+        
+        // 显示加载中
+        document.getElementById('loading').style.display = 'block';
+        
+        try {
+            // 处理图片数据
+            if (fileInput.files && fileInput.files[0]) {
+                // 使用本地上传的图片
+                readFileAsDataURL(fileInput.files[0]).then(function(data) {
+                    processWithImageData(cleanFeishuLink, customTitle, customDescription, data);
+                }).catch(function(error) {
+                    console.error('处理图片失败:', error);
+                    alert('处理图片失败，请重试');
+                    document.getElementById('loading').style.display = 'none';
+                });
+            } else if (imageUrl) {
+                // 使用图片URL
+                processWithImageData(cleanFeishuLink, customTitle, customDescription, imageUrl);
+            } else {
+                alert('请上传或提供封面图片');
+                document.getElementById('loading').style.display = 'none';
+            }
+        } catch (error) {
+            console.error('生成卡片时出错:', error);
+            alert('生成卡片时出错，请重试');
+            document.getElementById('loading').style.display = 'none';
+        }
+    });
+});
+
+// 图片URL预览
+function previewImageFromUrl() {
+    const imageUrl = document.getElementById('image-url').value;
+    const preview = document.getElementById('image-preview');
+    const previewDisplay = document.getElementById('preview-image-display');
+    
+    if (imageUrl) {
+        // 验证URL是否为图片
+        const img = new Image();
+        img.onload = function() {
+            preview.src = imageUrl;
+            preview.style.display = 'block';
+            previewDisplay.style.backgroundImage = "url('" + imageUrl + "')";
+        };
+        img.onerror = function() {
+            alert('无效的图片URL，请检查链接是否正确');
+            document.getElementById('image-url').value = '';
+            preview.style.display = 'none';
+            previewDisplay.style.backgroundImage = 'none';
+        };
+        img.src = imageUrl;
+        
+        // 清空文件上传
+        document.getElementById('file-upload').value = '';
+    } else {
+        preview.style.display = 'none';
+        previewDisplay.style.backgroundImage = 'none';
+    }
+}
+
+// 处理数据并生成卡片
+function processWithImageData(feishuLink, title, description, imageData) {
+    // 生成卡片HTML
+    const cardHtml = generateCardHtml(feishuLink, title, description, imageData);
+    
+    // 保存HTML内容用于下载
+    window.cardHtmlContent = cardHtml;
+    
+    // 创建Blob并生成URL
+    const blob = new Blob([cardHtml], { type: 'text/html' });
+    const blobUrl = URL.createObjectURL(blob);
+    
+    // 保存URL以便后续使用
+    window.cardBlobUrl = blobUrl;
+    
+    // 显示iframe预览
+    document.getElementById('card-iframe').src = blobUrl;
+    document.getElementById('card-iframe').style.display = 'block';
+    
+    // 构建带参数的分享链接
+    // 使用GitHub Pages (此处需替换为你自己的GitHub用户名或者组织名)
+    // 默认使用示例域名，实际使用时需要替换
+    const githubPagesUrl = "https://username.github.io/feishu-card-generator/share.html";
+    // 如果使用自己的域名，可以替换为：
+    // const shareBaseUrl = "https://你的域名/share.html";
+    
+    // 构建分享链接
+    let shareUrl = githubPagesUrl + "?url=" + encodeURIComponent(feishuLink) + 
+                  "&title=" + encodeURIComponent(title) + 
+                  "&desc=" + encodeURIComponent(description);
+    
+    // 如果是直接URL而非Data URL，则添加图片
+    if (typeof imageData === 'string' && !imageData.startsWith('data:')) {
+        shareUrl += "&img=" + encodeURIComponent(imageData);
+    }
+    
+    // 显示生成的链接，保留原始格式
+    document.getElementById('result-link').innerText = "@" + shareUrl;
+    
+    // 隐藏加载中，显示结果容器
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('result-container').style.display = 'block';
+    
+    // 滚动到结果区域
+    document.getElementById('result-container').scrollIntoView({ behavior: 'smooth' });
+}
+
+// 读取文件为DataURL并可选压缩
+function readFileAsDataURL(file) {
+    return new Promise(function(resolve, reject) {
+        try {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageDataUrl = e.target.result;
+                
+                // 可以在这里添加图片压缩代码，减小大小
+                const img = new Image();
+                img.onload = function() {
+                    // 如果图片太大，进行压缩
+                    if (img.width > 800 || img.height > 800) {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        
+                        // 计算新尺寸，保持比例
+                        let newWidth, newHeight;
+                        if (img.width > img.height) {
+                            newWidth = 800;
+                            newHeight = Math.round(img.height * (800 / img.width));
+                        } else {
+                            newHeight = 800;
+                            newWidth = Math.round(img.width * (800 / img.height));
+                        }
+                        
+                        canvas.width = newWidth;
+                        canvas.height = newHeight;
+                        
+                        // 绘制压缩后的图片
+                        ctx.drawImage(img, 0, 0, newWidth, newHeight);
+                        
+                        // 获取压缩后的DataURL (JPEG格式，质量0.8)
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                        resolve(compressedDataUrl);
+                    } else {
+                        // 如果图片不需要压缩，直接使用原始DataURL
+                        resolve(imageDataUrl);
+                    }
+                };
+                img.onerror = function() {
+                    reject(new Error('无法加载图片'));
+                };
+                img.src = imageDataUrl;
+            };
+            reader.onerror = function() {
+                reject(new Error('读取文件失败'));
+            };
+            reader.readAsDataURL(file);
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+// 生成卡片HTML
+function generateCardHtml(feishuLink, title, description, imageData) {
+    // 检查imageData是否是DataURL或普通URL
+    const isDataUrl = typeof imageData === 'string' && imageData.startsWith('data:');
+    
+    var htmlParts = [];
+    
+    htmlParts.push('<!DOCTYPE html>');
+    htmlParts.push('<html lang="zh-CN">');
+    htmlParts.push('<head>');
+    htmlParts.push('    <meta charset="UTF-8">');
+    htmlParts.push('    <meta name="viewport" content="width=device-width, initial-scale=1.0">');
+    htmlParts.push('    <title>' + escapeHtml(title) + '</title>');
+    htmlParts.push('    ');
+    htmlParts.push('    <!-- 微信卡片所需的Open Graph meta标签 -->');
+    htmlParts.push('    <meta property="og:title" content="' + escapeHtml(title) + '" />');
+    htmlParts.push('    <meta property="og:description" content="' + escapeHtml(description) + '" />');
+    htmlParts.push('    <meta property="og:image" content="' + (isDataUrl ? '' : escapeHtml(imageData)) + '" />');
+    htmlParts.push('    <meta property="og:url" content="' + escapeHtml(feishuLink) + '" />');
+    htmlParts.push('    <meta property="og:type" content="article" />');
+    htmlParts.push('    <meta property="og:site_name" content="飞书文档" />');
+    htmlParts.push('    ');
+    htmlParts.push('    <!-- QQ/微信分享优化 -->');
+    htmlParts.push('    <meta itemprop="name" content="' + escapeHtml(title) + '">');
+    htmlParts.push('    <meta itemprop="description" content="' + escapeHtml(description) + '">');
+    htmlParts.push('    <meta itemprop="image" content="' + (isDataUrl ? '' : escapeHtml(imageData)) + '">');
+    htmlParts.push('    <meta name="description" content="' + escapeHtml(description) + '">');
+    htmlParts.push('    ');
+    htmlParts.push('    <style>');
+    htmlParts.push('        body {');
+    htmlParts.push('            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;');
+    htmlParts.push('            margin: 0;');
+    htmlParts.push('            padding: 0;');
+    htmlParts.push('            background-color: #f5f5f5;');
+    htmlParts.push('            color: #333;');
+    htmlParts.push('        }');
+    htmlParts.push('        .container {');
+    htmlParts.push('            max-width: 800px;');
+    htmlParts.push('            margin: 0 auto;');
+    htmlParts.push('            padding: 20px;');
+    htmlParts.push('        }');
+    htmlParts.push('        .card {');
+    htmlParts.push('            background-color: white;');
+    htmlParts.push('            border-radius: 12px;');
+    htmlParts.push('            box-shadow: 0 4px 12px rgba(0,0,0,0.1);');
+    htmlParts.push('            overflow: hidden;');
+    htmlParts.push('            margin-bottom: 20px;');
+    htmlParts.push('        }');
+    htmlParts.push('        .card-header {');
+    htmlParts.push('            padding: 20px;');
+    htmlParts.push('            border-bottom: 1px solid #eee;');
+    htmlParts.push('        }');
+    htmlParts.push('        .card-title {');
+    htmlParts.push('            font-size: 1.5rem;');
+    htmlParts.push('            font-weight: bold;');
+    htmlParts.push('            margin: 0 0 10px 0;');
+    htmlParts.push('        }');
+    htmlParts.push('        .card-desc {');
+    htmlParts.push('            font-size: 1rem;');
+    htmlParts.push('            color: #666;');
+    htmlParts.push('            margin: 0;');
+    htmlParts.push('        }');
+    htmlParts.push('        .card-image {');
+    htmlParts.push('            width: 100%;');
+    htmlParts.push('            max-height: 400px;');
+    htmlParts.push('            object-fit: cover;');
+    htmlParts.push('        }');
+    htmlParts.push('        .card-footer {');
+    htmlParts.push('            padding: 15px 20px;');
+    htmlParts.push('            display: flex;');
+    htmlParts.push('            justify-content: space-between;');
+    htmlParts.push('            align-items: center;');
+    htmlParts.push('            background-color: #f9f9f9;');
+    htmlParts.push('        }');
+    htmlParts.push('        .btn {');
+    htmlParts.push('            background-color: #3370ff;');
+    htmlParts.push('            color: white;');
+    htmlParts.push('            border: none;');
+    htmlParts.push('            padding: 10px 20px;');
+    htmlParts.push('            border-radius: 6px;');
+    htmlParts.push('            cursor: pointer;');
+    htmlParts.push('            font-weight: bold;');
+    htmlParts.push('            text-decoration: none;');
+    htmlParts.push('        }');
+    htmlParts.push('        .source {');
+    htmlParts.push('            color: #999;');
+    htmlParts.push('            font-size: 0.9rem;');
+    htmlParts.push('        }');
+    htmlParts.push('    </style>');
+    htmlParts.push('</head>');
+    htmlParts.push('<body>');
+    htmlParts.push('    <div class="container">');
+    htmlParts.push('        <div class="card">');
+    htmlParts.push('            <div class="card-header">');
+    htmlParts.push('                <h1 class="card-title">' + escapeHtml(title) + '</h1>');
+    htmlParts.push('                <p class="card-desc">' + escapeHtml(description) + '</p>');
+    htmlParts.push('            </div>');
+            
+    if (isDataUrl) {
+        htmlParts.push('            <img class="card-image" src="' + imageData + '" alt="' + escapeHtml(title) + '">');
+    } else {
+        htmlParts.push('            <img class="card-image" src="' + escapeHtml(imageData) + '" alt="' + escapeHtml(title) + '">');
+    }
+            
+    htmlParts.push('            <div class="card-footer">');
+    htmlParts.push('                <a href="' + escapeHtml(feishuLink) + '" class="btn">查看文档</a>');
+    htmlParts.push('                <span class="source">来源: 飞书文档</span>');
+    htmlParts.push('            </div>');
+    htmlParts.push('        </div>');
+    htmlParts.push('    </div>');
+    htmlParts.push('    ');
+    htmlParts.push('    <script>');
+    htmlParts.push('        // 页面加载后重定向到飞书文档');
+    htmlParts.push('        window.addEventListener("load", function() {');
+    htmlParts.push('            // 2秒后自动跳转到原始飞书文档');
+    htmlParts.push('            setTimeout(function() {');
+    htmlParts.push('                window.location.href = "' + escapeHtml(feishuLink) + '";');
+    htmlParts.push('            }, 2000);');
+    htmlParts.push('        });');
+    htmlParts.push('    <\/script>');
+    htmlParts.push('</body>');
+    htmlParts.push('</html>');
+    
+    return htmlParts.join('\n');
+}
+
+// HTML转义函数，防止XSS和编码问题
+function escapeHtml(text) {
+    if (!text) return '';
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+// 复制链接功能
+function copyLink() {
+    const linkText = document.getElementById('result-link').innerText;
+    
+    try {
+        navigator.clipboard.writeText(linkText).then(function() {
+            alert('链接已复制到剪贴板');
+        }).catch(function() {
+            fallbackCopyTextToClipboard(linkText);
+        });
+    } catch (err) {
+        fallbackCopyTextToClipboard(linkText);
+    }
+}
+
+// 复制功能的兼容性后备方案
+function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.top = '0';
+    textArea.style.left = '0';
+    textArea.style.width = '2em';
+    textArea.style.height = '2em';
+    textArea.style.padding = '0';
+    textArea.style.border = 'none';
+    textArea.style.outline = 'none';
+    textArea.style.boxShadow = 'none';
+    textArea.style.background = 'transparent';
+    
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        const msg = successful ? '链接已复制到剪贴板' : '复制失败，请手动复制';
+        alert(msg);
+    } catch (err) {
+        alert('复制失败，请手动复制链接');
+    }
+    
+    document.body.removeChild(textArea);
+}
+
+// 下载HTML文件功能
+function downloadCardPage() {
+    if (window.cardHtmlContent) {
+        const blob = new Blob([window.cardHtmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = '飞书卡片.html';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 100);
+    } else {
+        alert('未生成HTML内容，请先提交表单');
+    }
+}
+</script>
+</html> 
